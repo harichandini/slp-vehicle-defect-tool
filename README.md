@@ -32,22 +32,34 @@ The intended use is fast intake triage, not final case evaluation.
 
 ## Architecture
 
+The application is intentionally small and reviewable. It is split into a thin frontend presentation layer and a backend service that handles external API calls plus lightweight domain-specific analysis.
+
 ### Frontend
 
 - React + Vite single-page application
-- Recharts for trend and geography visualizations
-- One primary results page that renders search, scoring, charts, and complaint excerpts
+- Recharts for trend and summary visualizations
+- Focused intake dashboard for:
+  - search input
+  - vehicle snapshot
+  - scoring and severity summaries
+  - trends, geography, recalls, and complaint excerpts
 
 ### Backend
 
-- FastAPI API service
-- `requests` for live NHTSA API calls
+- FastAPI service that acts as the system boundary to NHTSA
+- `requests` for live VIN, recall, complaint, and metadata lookups
 - Lightweight analysis helpers for:
   - complaint severity tagging
   - top-component aggregation
   - yearly trend aggregation
-  - geography distribution
+  - complaint geography estimation from free-text summaries
 - TF-IDF + cosine similarity for symptom search
+
+### Why This Shape
+
+- It keeps the app easy to run locally and easy to inspect during review.
+- It avoids unnecessary infrastructure for a take-home scope.
+- It centralizes NHTSA-specific logic in the backend so the UI can stay focused on workflow and presentation.
 
 ### Data Flow
 
@@ -194,19 +206,21 @@ Returns the most similar complaint narratives for a symptom phrase.
 
 ## Assumptions
 
-- The app is intended for local demo or take-home review, not deployment-grade production use.
-- Live NHTSA APIs are available during use.
-- Complaint text and metadata are incomplete or inconsistent across vehicle records, so the UI should degrade gracefully.
-- The case strength score is a screening heuristic, not a legal conclusion or predictive model.
-- State-level geography is sufficient for this MVP when location detail exists.
+- The intended usage is local demo or take-home review, not production deployment.
+- Live NHTSA endpoints are available and responsive during evaluation.
+- Complaint records are noisy and partially structured, so the product should degrade gracefully when fields are missing or inconsistent.
+- The case strength score is a triage heuristic only. It is meant to support intake review, not replace legal judgment.
+- Geographic distribution is estimated from free-text complaint summaries and is inherently incomplete.
+- A reviewer benefits more from a clear, inspectable implementation than from heavier infrastructure or speculative optimization.
 
 ## Tradeoffs
 
-- Live API calls keep the system simple and easy to review, but external latency and response variability are outside the app's control.
-- Keyword-based severity detection is transparent and fast, but less precise than a trained NLP pipeline.
-- TF-IDF symptom search is lightweight and explainable, but less semantically capable than embeddings-based retrieval.
-- A single-page UI keeps the workflow compact, but it limits deeper drill-down and filtering.
-- The score is deterministic and easy to inspect, but not calibrated against case outcomes.
+- Live API calls keep the architecture simple and the data fresh, but they introduce dependency on third-party latency and uptime.
+- The backend favors deterministic heuristics over opaque models so the behavior is easier to review and reason about in a take-home setting.
+- Keyword-based severity tagging is fast and transparent, but it will miss nuance that a richer NLP pipeline could capture.
+- TF-IDF symptom search is lightweight and explainable, but less capable than embeddings-based retrieval for semantic matching.
+- The single-page dashboard optimizes for fast intake triage, but it intentionally leaves out deeper drill-down, saved views, and workflow state.
+- The geographic view is useful directional context, but it is an estimate rather than a canonical structured location dataset.
 
 ## Limitations
 
@@ -219,30 +233,28 @@ Returns the most similar complaint narratives for a symptom phrase.
 
 ## AI Tools Used
 
-AI tools were used as implementation accelerators, not as a substitute for product judgment or code review.
+AI tools were used as accelerators for implementation and iteration, not as a substitute for engineering judgment.
 
-- ChatGPT
-  - used for early brainstorming, structure exploration, and rough drafting
-- Codex
-  - used for repository-local implementation, debugging, UI refinement, and documentation cleanup
+- ChatGPT was used for early brainstorming, feature framing, and rough drafting.
+- Codex was used for repository-local implementation, debugging, UI refinement, and documentation cleanup.
 
-All generated code and documentation were manually reviewed and adjusted.
+All generated output was reviewed, edited, and validated in the local project context before being kept.
 
 ## Future Improvements
 
 Given more time, I would prioritize the following next steps:
 
-1. Add caching or persistence to reduce repeated live API calls.
-2. Add automated tests around backend transforms and frontend rendering edge cases.
-3. Improve complaint search with embeddings or hybrid retrieval.
-4. Expand filtering by component, severity, year range, and geography.
-5. Add intake-summary export for internal case review.
-6. Improve recall presentation with stronger manufacturer-remedy summaries.
-7. Add richer analytics around repeat defect themes and model-year comparisons.
-8. Add deployment configuration and environment-specific settings.
+1. Add automated tests around backend transforms, API failure handling, and frontend rendering edge cases.
+2. Introduce caching or persistence to reduce repeated live NHTSA calls and improve responsiveness.
+3. Improve complaint search with embeddings or hybrid retrieval instead of pure TF-IDF.
+4. Expand analyst controls with filtering by component, severity, geography, and year range.
+5. Improve the geographic pipeline with a stronger extraction strategy and confidence scoring.
+6. Add exportable intake summaries for case review workflows.
+7. Improve recall presentation with clearer remedy and consequence summaries.
+8. Add deployment configuration, environment management, and observability basics if the project were to move beyond take-home scope.
 
 ## Submission Notes
 
-This solution is intentionally pragmatic. The focus was to deliver a clear end-to-end intake workflow that works locally, uses real public data, and makes engineering tradeoffs that are easy for a reviewer to inspect.
+This submission is intentionally pragmatic. The goal was to deliver a working end-to-end intake workflow that is easy to run, easy to review, and grounded in real public data.
 
-For a take-home submission, that felt more defensible than overbuilding infrastructure or adding speculative complexity that would not materially improve the review experience.
+Where tradeoffs were necessary, I favored clarity, inspectability, and product usefulness over heavier infrastructure or speculative complexity. That felt like the strongest fit for a take-home evaluation.

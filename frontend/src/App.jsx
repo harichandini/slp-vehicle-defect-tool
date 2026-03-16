@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, ResponsiveContainer, Legend } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend } from 'recharts'
+import GeographicDistributionPanel from './components/GeographicDistributionPanel'
 
 const API = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '')
-const GEOGRAPHY_UNAVAILABLE_MESSAGE = 'Geographic complaint detail is not available for this vehicle in the current dataset.'
 const SEVERITY_LABELS = [
   { key: 'crash', label: 'Crash' },
   { key: 'fire', label: 'Fire' },
@@ -75,6 +75,10 @@ export default function App() {
   const [searchResults, setSearchResults] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [insightTab, setInsightTab] = useState('trends')
+  const [geographyData, setGeographyData] = useState([])
+  const [geographyLoading, setGeographyLoading] = useState(false)
+  const [geographyError, setGeographyError] = useState('')
   const [modelOptions, setModelOptions] = useState([])
   const [modelsLoading, setModelsLoading] = useState(false)
 
@@ -120,6 +124,49 @@ export default function App() {
     }
   }, [form.make, form.year])
 
+  useEffect(() => {
+    let ignore = false
+
+    async function loadGeography() {
+      const make = data?.vehicle?.make
+      const model = data?.vehicle?.model
+      const year = data?.vehicle?.year
+
+      if (!make || !model || !year) {
+        setGeographyData([])
+        setGeographyError('')
+        setGeographyLoading(false)
+        return
+      }
+
+      setGeographyLoading(true)
+      setGeographyError('')
+
+      try {
+        const params = new URLSearchParams({ make, model, year })
+        const json = await readJson(await fetch(`${API}/complaints/geography?${params.toString()}`))
+        if (!ignore) {
+          setGeographyData(Array.isArray(json.stateData) ? json.stateData : [])
+        }
+      } catch (e) {
+        if (!ignore) {
+          setGeographyData([])
+          setGeographyError(e.message)
+        }
+      } finally {
+        if (!ignore) {
+          setGeographyLoading(false)
+        }
+      }
+    }
+
+    loadGeography()
+
+    return () => {
+      ignore = true
+    }
+  }, [data?.vehicle?.make, data?.vehicle?.model, data?.vehicle?.year])
+
   const makeOptions = useMemo(() => CURATED_MAKES, [])
 
   const trendData = useMemo(() => {
@@ -138,46 +185,6 @@ export default function App() {
       })
       .sort((a, b) => Number(a.year) - Number(b.year))
   }, [data])
-
-  const geography = useMemo(() => {
-    if (!data?.geography || typeof data.geography !== 'object' || Array.isArray(data.geography)) {
-      return {
-        state_counts: {},
-        region_counts: {},
-        classification: 'Unknown',
-        summary: GEOGRAPHY_UNAVAILABLE_MESSAGE
-      }
-    }
-
-    if ('state_counts' in data.geography || 'region_counts' in data.geography || 'classification' in data.geography || 'summary' in data.geography) {
-      return {
-        state_counts: data.geography.state_counts || {},
-        region_counts: data.geography.region_counts || {},
-        classification: data.geography.classification || 'Unknown',
-        summary: data.geography.summary || GEOGRAPHY_UNAVAILABLE_MESSAGE
-      }
-    }
-
-    return {
-      state_counts: data.geography,
-      region_counts: {},
-      classification: 'Unknown',
-      summary: GEOGRAPHY_UNAVAILABLE_MESSAGE
-    }
-  }, [data])
-
-  const geoData = useMemo(() => {
-    return Object.entries(geography.state_counts)
-      .map(([state, count]) => ({ state, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10)
-  }, [geography])
-
-  const regionData = useMemo(() => {
-    return Object.entries(geography.region_counts)
-      .map(([region, count]) => ({ region, count }))
-      .sort((a, b) => b.count - a.count)
-  }, [geography])
 
   const severityData = useMemo(() => {
     return SEVERITY_LABELS.map(({ key, label }) => ({
@@ -240,8 +247,11 @@ export default function App() {
 
   async function fetchVehicle() {
     setLoading(true)
-    setError('')
-    setSearchResults([])
+      setError('')
+      setSearchResults([])
+      setGeographyError('')
+      setGeographyData([])
+      setInsightTab('trends')
 
     try {
       let response
@@ -515,71 +525,53 @@ export default function App() {
             )}
           </section>
 
-          <section className="two-col">
-            <div className="card">
-              <h2>Vehicle Defect Trends by Year</h2>
-              {trendData.length ? (
-                <ResponsiveContainer width="100%" height={260}>
-                  <LineChart data={trendData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="year" />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="complaints" name="Complaints" stroke="#111827" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="recalls" name="Recalls" stroke="#2563eb" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="injuries" name="Injuries" stroke="#dc2626" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="fires" name="Fires" stroke="#ea580c" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="crashes" name="Crashes" stroke="#7c3aed" strokeWidth={2} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <p className="muted empty-state">No yearly trend data available.</p>
-              )}
+          <section className="card">
+            <div className="mode-toggle dashboard-tabs" role="tablist" aria-label="Dashboard insights">
+              <button
+                type="button"
+                className={`mode-toggle-button${insightTab === 'trends' ? ' active' : ''}`}
+                onClick={() => setInsightTab('trends')}
+              >
+                Trends
+              </button>
+              <button
+                type="button"
+                className={`mode-toggle-button${insightTab === 'geography' ? ' active' : ''}`}
+                onClick={() => setInsightTab('geography')}
+              >
+                Geographic Distribution
+              </button>
             </div>
 
-            <div className="card geography-card">
-              <div className="section-head">
-                <div>
-                  <h2>Geographic Pattern</h2>
-                  {geoData.length ? (
-                    <p className="muted section-note">{geography.summary}</p>
-                  ) : null}
-                </div>
-                {geoData.length ? (
-                  <span className={`geo-badge geo-badge-${geography.classification.toLowerCase()}`}>
-                    {geography.classification}
-                  </span>
-                ) : null}
-              </div>
-              {geoData.length ? (
-                <>
-                  {regionData.length ? (
-                    <div className="region-list">
-                      {regionData.map(({ region, count }) => (
-                        <div key={region} className="region-chip">
-                          <strong>{region}</strong>
-                          <span>{count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                  <ResponsiveContainer width="100%" height={260}>
-                    <BarChart data={geoData}>
+            {insightTab === 'trends' ? (
+              <div>
+                <h2>Vehicle Defect Trends by Year</h2>
+                {trendData.length ? (
+                  <ResponsiveContainer width="100%" height={320}>
+                    <LineChart data={trendData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="state" />
+                      <XAxis dataKey="year" />
                       <YAxis allowDecimals={false} />
                       <Tooltip />
-                      <Bar dataKey="count" />
-                    </BarChart>
+                      <Legend />
+                      <Line type="monotone" dataKey="complaints" name="Complaints" stroke="#111827" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="recalls" name="Recalls" stroke="#2563eb" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="injuries" name="Injuries" stroke="#dc2626" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="fires" name="Fires" stroke="#ea580c" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="crashes" name="Crashes" stroke="#7c3aed" strokeWidth={2} dot={false} />
+                    </LineChart>
                   </ResponsiveContainer>
-                </>
-              ) : (
-                <div className="empty-state-panel">
-                  <p className="muted empty-state">{GEOGRAPHY_UNAVAILABLE_MESSAGE}</p>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <p className="muted empty-state">No yearly trend data available.</p>
+                )}
+              </div>
+            ) : (
+              <GeographicDistributionPanel
+                stateData={geographyData}
+                loading={geographyLoading}
+                error={geographyError}
+              />
+            )}
           </section>
 
           <section className="two-col">

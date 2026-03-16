@@ -7,6 +7,7 @@ import requests
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
+from .geography import build_state_data, fetch_complaints_for_geography
 from .nhtsa import NHTSAClient, analyze_complaints, build_geography_analysis, build_yearly_trend
 from .search import ComplaintSearcher
 
@@ -158,6 +159,17 @@ def semantic_search(
         return {
             "query": query,
             "results": [],
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.get("/complaints/geography")
+def complaints_geography(make: str, model: str, year: str | None = Query(default=None)):
+    try:
+        complaints = fetch_complaints_for_geography(client=client, make=make, model=model, year=year)
+        return {
+            "stateData": build_state_data(complaints),
         }
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
