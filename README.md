@@ -19,6 +19,20 @@ The current MVP supports:
 - Complaint geography when state-like data is available
 - Symptom-based complaint search
 
+## Screenshots
+
+### Home Page
+<img width="1440" height="900" alt="Home Page" src="https://github.com/user-attachments/assets/fefe7a36-6869-4c0a-bb15-7484c5c3d750" />
+
+### Vechile Search Result
+<img width="1440" height="900" alt="Example Vehicle Search Result" src="https://github.com/user-attachments/assets/4e0cdf3c-1953-49c9-859f-a1471e8c175f" />
+
+### VIN Lookup Result
+<img width="1440" height="900" alt="VIN Lookup Result" src="https://github.com/user-attachments/assets/171202f8-79c3-4628-a912-034aba1e98ea" />
+
+### Detailed Review
+<img width="1440" height="900" alt="Detailed Review- Trends Recall " src="https://github.com/user-attachments/assets/198248b9-e012-4573-a7a4-45eb0c899254" />
+
 ## User Workflow
 
 1. Open the app and choose either `Search by VIN` or `Search by Vehicle`.
