@@ -275,8 +275,6 @@ Given more time, I would prioritize the following next steps:
 7. Improve recall presentation with clearer remedy and consequence summaries.
 8. Add deployment configuration, environment management, and observability basics if the project were to move beyond take-home scope.
 
-## Submission Notes
-
-This submission is intentionally pragmatic. The goal was to deliver a working end-to-end intake workflow that is easy to run, easy to review, and grounded in real public data.
+The goal was to deliver a working end-to-end intake workflow that is easy to run, easy to review, and grounded in real public data.
 
 Where tradeoffs were necessary, I favored clarity, inspectability, and product usefulness over heavier infrastructure or speculative complexity. That felt like the strongest fit for a take-home evaluation.
