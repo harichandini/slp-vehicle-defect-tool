@@ -22,20 +22,24 @@ The current MVP supports:
 ## Screenshots
 
 ### Home Page
-<img width="1440" height="900" alt="Home Page" src="https://github.com/user-attachments/assets/fefe7a36-6869-4c0a-bb15-7484c5c3d750" />
+<img width="1136" height="643" alt="Home Page" src="https://github.com/user-attachments/assets/aad3d054-4219-4f22-87bc-dbf55275a8af" />
 
 ### Vechile Search Result
-<img width="1440" height="900" alt="Example Vehicle Search Result" src="https://github.com/user-attachments/assets/4e0cdf3c-1953-49c9-859f-a1471e8c175f" />
+<img width="1435" height="808" alt="Example Vehicle Search Result" src="https://github.com/user-attachments/assets/63031115-7b3d-417c-97e1-357c02ef037c" />
+
 
 ### VIN Lookup Result
-<img width="1440" height="900" alt="VIN Lookup Result" src="https://github.com/user-attachments/assets/171202f8-79c3-4628-a912-034aba1e98ea" />
+<img width="1434" height="810" alt="VIN Lookup Result" src="https://github.com/user-attachments/assets/785ee396-3d5c-474a-b69a-458b2f77d2ba" />
+
 
 ### Detailed Review
 #### Vehicle Defect Trends by Year
-<img width="1440" height="900" alt="Vehicle Defect Trends by Year" src="https://github.com/user-attachments/assets/8ff6b86f-cbc4-4101-a06b-36a17629943c" />
+<img width="1433" height="808" alt="Vehicle Defect Trends by Year" src="https://github.com/user-attachments/assets/57791c70-36ad-4db1-8aff-12647887101c" />
+
 
 #### Geographic Distribution
-<img width="1440" height="900" alt="Geographic Distribution" src="https://github.com/user-attachments/assets/e19d636b-aac4-43ea-b304-29c3b2934cca" />
+<img width="1440" height="804" alt="Geographic Distribution" src="https://github.com/user-attachments/assets/66eaca3f-7c36-413f-b435-ac8381e3766c" />
+
 
 ## User Workflow
 
