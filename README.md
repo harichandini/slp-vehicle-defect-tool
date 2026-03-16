@@ -31,7 +31,11 @@ The current MVP supports:
 <img width="1440" height="900" alt="VIN Lookup Result" src="https://github.com/user-attachments/assets/171202f8-79c3-4628-a912-034aba1e98ea" />
 
 ### Detailed Review
-<img width="1440" height="900" alt="Detailed Review- Trends Recall " src="https://github.com/user-attachments/assets/198248b9-e012-4573-a7a4-45eb0c899254" />
+#### Vehicle Defect Trends by Year
+<img width="1440" height="900" alt="Vehicle Defect Trends by Year" src="https://github.com/user-attachments/assets/8ff6b86f-cbc4-4101-a06b-36a17629943c" />
+
+#### Geographic Distribution
+<img width="1440" height="900" alt="Geographic Distribution" src="https://github.com/user-attachments/assets/e19d636b-aac4-43ea-b304-29c3b2934cca" />
 
 ## User Workflow
 
